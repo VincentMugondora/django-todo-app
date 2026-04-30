@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 
 from pathlib import Path
 import os
+from decouple import Csv, config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -21,12 +22,37 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-a0q)0yxcm90d8fp1+t6@w5ajb(m3ezdyh)+ud9rd)2*9es495q'
+SECRET_KEY = config(
+    'SECRET_KEY',
+    default='django-insecure-a0q)0yxcm90d8fp1+t6@w5ajb(m3ezdyh)+ud9rd)2*9es495q',
+)
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = config('DEBUG', default=True, cast=bool)
 
-ALLOWED_HOSTS = []
+DEFAULT_ALLOWED_HOSTS = [
+    '.onrender.com',
+    'django-todo-app-o0fz.onrender.com',
+    'localhost',
+    '127.0.0.1',
+]
+
+ALLOWED_HOSTS = list(
+    dict.fromkeys(
+        config('ALLOWED_HOSTS', default='', cast=Csv())
+        + DEFAULT_ALLOWED_HOSTS
+    )
+)
+
+render_external_hostname = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
+if render_external_hostname:
+    ALLOWED_HOSTS.append(render_external_hostname)
+
+CSRF_TRUSTED_ORIGINS = config(
+    'CSRF_TRUSTED_ORIGINS',
+    default='https://*.onrender.com',
+    cast=Csv(),
+)
 
 
 # Application definition
